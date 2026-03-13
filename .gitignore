@@ -8,7 +8,13 @@ __pycache__/
 venv/
 .venv/
 env/
+.venv-1
+# Vector database
+chroma_db/
 
+# Virtual environments
+.venv/
+.venv-1/
 # dotenv
 .env
 
