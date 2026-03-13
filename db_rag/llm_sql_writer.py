@@ -10,13 +10,9 @@ def write_sql_from_plan(
     model_name="gemini-2.5-flash",
 ):
 
-    # Convert plan to a stable string for prompt
     plan_json = json.dumps(plan, indent=2)
-
-    # Make the context readable in the prompt
     context_block = "\n".join(["---\n" + d for d in retrieved_docs])
 
-    # Join instructions: the LLM must reuse skeleton, not re-derive join keys.
     join_block = ""
     if join_skeleton_sql:
         join_block = f"""
@@ -38,10 +34,12 @@ You are a PostgreSQL query writer.
 
 RULES (very important):
 - Use ONLY the tables/columns that appear in the CONTEXT below.
+-Use proper name not give random table name like t1.column_name, t2.column_name, use table name.
 - Do NOT invent table names or columns.
 - If a join is required, use the provided JOIN SKELETON exactly.
 - Use parameter placeholders like $1, $2 instead of embedding user values directly.
-- Output SQL first, then a brief explanation.
+- Only generate SELECT queries.
+- Return STRICT JSON only. Do not add markdown. Do not add explanations outside JSON.
 
 CONTEXT:
 {context_block}
@@ -54,13 +52,13 @@ PLAN (JSON):
 QUESTION:
 {question}
 
-OUTPUT FORMAT:
-SQL:
-<single/Multiple SQL statement>
+OUTPUT FORMAT (STRICT JSON):
 
-Explanation:
-- bullet 1
-- bullet 2
+{{
+  "sql": "single SELECT statement ending with semicolon",
+  "params": [],
+  "explanation": ["short bullet 1", "short bullet 2"]
+}}
 """
 
     resp = gclient.models.generate_content(
@@ -68,4 +66,24 @@ Explanation:
         contents=prompt,
     )
 
-    return (resp.text or "").strip()
+    text = (resp.text or "").strip()
+
+    # Safe JSON parsing
+    try:
+        return json.loads(text)
+    except Exception:
+        # attempt to extract JSON block
+        start = text.find("{")
+        end = text.rfind("}")
+        if start != -1 and end != -1:
+            try:
+                return json.loads(text[start:end+1])
+            except Exception:
+                pass
+
+        return {
+            "sql": None,
+            "params": [],
+            "explanation": ["Invalid JSON from model"],
+            "raw_output": text
+        }

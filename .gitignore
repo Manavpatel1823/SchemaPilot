@@ -25,6 +25,9 @@ chroma_db/
 *.png
 *.dot
 
+db_rag/last_result.json
+node_modules
+
 # IDE
 .vscode/
 .idea/
