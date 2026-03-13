@@ -56,7 +56,7 @@ QUESTION:
 
 OUTPUT FORMAT:
 SQL:
-<single SQL statement>
+<single/Multiple SQL statement>
 
 Explanation:
 - bullet 1

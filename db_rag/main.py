@@ -45,45 +45,43 @@ def main():
         print("\n Missing info:\n", plan["missing_info"])
         return
 
-    start_table = plan.get("start_table")
-    target_table = plan.get("target_table")
+    queries = plan.get("queries", [])
 
-    # 8) Compute join path ON-DEMAND (only if we have start + target)
-    join_path_text = ""
-    join_skeleton_sql = ""
+    if not queries:
+        print("No queries found in plan.")
+        return
+    
+    for qplan in queries:
+        print(f"\n--- Processing query: {qplan.get('label')} ---")
 
-    if start_table and target_table:
-        path, joins = find_join_path(start_table, target_table, deps, refs, max_depth=6)
+        start_table = qplan.get("start_table")
+        target_table = qplan.get("target_table")
 
-        if path is None:
-            join_path_text = f"No join path found from {start_table} to {target_table} (depth<=6)."
-        else:
-            # Human-readable join path text for the prompt
-            join_path_text = " -> ".join(path) + "\n" + "\n".join(
-                [f'{j["left_table"]}.{j["left_col"]} = {j["right_table"]}.{j["right_col"]} ({j["constraint"]})'
-                 for j in joins]
-            )
-            join_skeleton_sql = joins_to_sql(start_table, joins)
+        join_path_text = ""
+        join_skeleton_sql = ""
 
-    answer = write_sql_from_plan(
-        gclient=gclient,
-        question=question,
-        retrieved_docs=retrieved_docs,
-        plan=plan,
-        join_path_text=join_path_text,
-        join_skeleton_sql=join_skeleton_sql,
-    )
+        if start_table and target_table:
+            path, joins = find_join_path(start_table, target_table, deps, refs, max_depth=6)
 
+            if path:
+                join_path_text = " -> ".join(path) + "\n" + "\n".join(
+                    [f'{j["left_table"]}.{j["left_col"]} = {j["right_table"]}.{j["right_col"]}'
+                    for j in joins]
+                )
 
-    print("\n=== PLAN (from Gemini) ===")
-    print(json.dumps(plan, indent=2))
+                join_skeleton_sql = joins_to_sql(start_table, joins)
 
-    if join_skeleton_sql:
-        print("\n=== JOIN SKELETON (from your BFS) ===")
-        print(join_skeleton_sql)
+        answer = write_sql_from_plan(
+            gclient=gclient,
+            question=question,
+            retrieved_docs=retrieved_docs,
+            plan=qplan,
+            join_path_text=join_path_text,
+            join_skeleton_sql=join_skeleton_sql,
+        )
 
-    print("\n=== FINAL OUTPUT (Gemini) ===")
-    print(answer)
+        print("\n=== SQL OUTPUT ===")
+        print(answer)   
 
 
 if __name__ == "__main__":
