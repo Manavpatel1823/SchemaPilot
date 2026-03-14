@@ -1,0 +1,50 @@
+{
+  "question": "Which department has the highest total enrollments across all its courses?",
+  "plan": {
+    "queries": [
+      {
+        "label": "Department with highest total enrollments",
+        "tables": [
+          "enrollments",
+          "courses",
+          "departments"
+        ],
+        "start_table": "enrollments",
+        "target_table": "departments",
+        "intent": "group_by",
+        "measure": "enrollments.student_id",
+        "filters": [],
+        "group_by": [
+          "departments.id",
+          "departments.name"
+        ]
+      }
+    ],
+    "missing_info": null
+  },
+  "results": [
+    {
+      "label": "Department with highest total enrollments",
+      "sql": "SELECT departments.name, COUNT(enrollments.student_id) AS total_enrollments FROM enrollments JOIN courses ON enrollments.course_id = courses.id JOIN departments ON courses.dept_id = departments.id GROUP BY departments.id, departments.name ORDER BY total_enrollments DESC LIMIT 1;",
+      "params": [],
+      "data": {
+        "columns": [
+          "name",
+          "total_enrollments"
+        ],
+        "rows": [
+          {
+            "name": "Computer Science",
+            "total_enrollments": 3
+          }
+        ],
+        "row_count": 1
+      },
+      "chart": {
+        "type": "bar",
+        "x": "name",
+        "y": "total_enrollments"
+      }
+    }
+  ]
+}

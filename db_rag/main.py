@@ -109,15 +109,15 @@ def main():
         print("Chart suggestion:", chart)
         print("Preview rows:", data["rows"][:5])
 
-    # Print full JSON output (optional)
     output = {"question": question, "plan": plan, "results": all_results}
     print("\n=== FULL OUTPUT JSON ===")
     print(json.dumps(output, indent=2))
 
-    # Optional: save to file
-    with open("last_result.json", "w", encoding="utf-8") as f:
+    save_path = os.path.join("..", "frontend", "public", "last_result.json")
+    with open(save_path, "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2)
-    print("\nSaved: last_result.json")
+
+    print(f"\nSaved: {save_path}")
 
 
 if __name__ == "__main__":
