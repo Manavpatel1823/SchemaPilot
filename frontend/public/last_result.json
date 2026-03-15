@@ -1,22 +1,25 @@
 {
-  "question": "Which department has the highest total enrollments across all its courses?",
+  "question": "Show the relationship between course enrollment size and average score.",
   "plan": {
     "queries": [
       {
-        "label": "Department with highest total enrollments",
+        "label": "course_enrollment_size_and_average_score",
         "tables": [
-          "enrollments",
           "courses",
-          "departments"
+          "enrollments",
+          "grades"
         ],
-        "start_table": "enrollments",
-        "target_table": "departments",
+        "start_table": "courses",
+        "target_table": "courses",
         "intent": "group_by",
-        "measure": "enrollments.student_id",
+        "measure": {
+          "enrollment_size": "count(DISTINCT enrollments.student_id)",
+          "average_score": "avg(grades.score)"
+        },
         "filters": [],
         "group_by": [
-          "departments.id",
-          "departments.name"
+          "courses.id",
+          "courses.title"
         ]
       }
     ],
@@ -24,26 +27,135 @@
   },
   "results": [
     {
-      "label": "Department with highest total enrollments",
-      "sql": "SELECT departments.name, COUNT(enrollments.student_id) AS total_enrollments FROM enrollments JOIN courses ON enrollments.course_id = courses.id JOIN departments ON courses.dept_id = departments.id GROUP BY departments.id, departments.name ORDER BY total_enrollments DESC LIMIT 1;",
+      "label": "course_enrollment_size_and_average_score",
+      "sql": "SELECT courses.id, courses.title, COUNT(DISTINCT enrollments.student_id) AS enrollment_size, AVG(grades.score) AS average_score FROM courses LEFT JOIN enrollments ON courses.id = enrollments.course_id LEFT JOIN grades ON courses.id = grades.course_id GROUP BY courses.id, courses.title;",
       "params": [],
       "data": {
         "columns": [
-          "name",
-          "total_enrollments"
+          "id",
+          "title",
+          "enrollment_size",
+          "average_score"
         ],
         "rows": [
           {
-            "name": "Computer Science",
-            "total_enrollments": 3
+            "id": 1,
+            "title": "Intro to Programming",
+            "enrollment_size": 2,
+            "average_score": 80.16666666666667
+          },
+          {
+            "id": 2,
+            "title": "Data Structures",
+            "enrollment_size": 1,
+            "average_score": 80.75
+          },
+          {
+            "id": 3,
+            "title": "Calculus I",
+            "enrollment_size": 2,
+            "average_score": 74.5
+          },
+          {
+            "id": 4,
+            "title": "Algorithms",
+            "enrollment_size": 0,
+            "average_score": 83.25
+          },
+          {
+            "id": 5,
+            "title": "Operating Systems",
+            "enrollment_size": 0,
+            "average_score": 76.25
+          },
+          {
+            "id": 6,
+            "title": "Machine Learning",
+            "enrollment_size": 0,
+            "average_score": 91.0
+          },
+          {
+            "id": 7,
+            "title": "Computer Networks",
+            "enrollment_size": 0,
+            "average_score": 72.5
+          },
+          {
+            "id": 8,
+            "title": "Linear Algebra",
+            "enrollment_size": 0,
+            "average_score": 87.0
+          },
+          {
+            "id": 9,
+            "title": "Probability",
+            "enrollment_size": 0,
+            "average_score": null
+          },
+          {
+            "id": 10,
+            "title": "Numerical Methods",
+            "enrollment_size": 0,
+            "average_score": null
+          },
+          {
+            "id": 11,
+            "title": "Classical Mechanics",
+            "enrollment_size": 0,
+            "average_score": 69.75
+          },
+          {
+            "id": 12,
+            "title": "Quantum Physics",
+            "enrollment_size": 0,
+            "average_score": null
+          },
+          {
+            "id": 13,
+            "title": "Organic Chemistry",
+            "enrollment_size": 0,
+            "average_score": 79.25
+          },
+          {
+            "id": 14,
+            "title": "Inorganic Chemistry",
+            "enrollment_size": 0,
+            "average_score": null
+          },
+          {
+            "id": 15,
+            "title": "Genetics",
+            "enrollment_size": 0,
+            "average_score": 91.25
+          },
+          {
+            "id": 16,
+            "title": "Microbiology",
+            "enrollment_size": 0,
+            "average_score": null
+          },
+          {
+            "id": 17,
+            "title": "Statistical Inference",
+            "enrollment_size": 0,
+            "average_score": 82.25
+          },
+          {
+            "id": 18,
+            "title": "Data Analysis",
+            "enrollment_size": 0,
+            "average_score": null
           }
         ],
-        "row_count": 1
+        "row_count": 18
       },
       "chart": {
-        "type": "bar",
-        "x": "name",
-        "y": "total_enrollments"
+        "chart_type": "scatter",
+        "x": "id",
+        "y": "enrollment_size",
+        "title": "Enrollment Size vs Id",
+        "reason": "Two meaningful numeric columns detected.",
+        "confidence": 0.9
       }
     }
   ]

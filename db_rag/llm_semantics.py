@@ -33,7 +33,23 @@ Do not include explanations or markdown.
 """
 
 def build_user_prompt(table_profile_payload: Dict[str, Any]) -> str:
-    return json.dumps(table_profile_payload, default=str, indent=2)
+    return f"""
+Analyze the following database table profile and generate semantic metadata.
+
+Return ONLY valid JSON with keys:
+description
+purpose
+grain
+important_columns
+possible_metrics
+common_filters
+warnings
+example_questions
+common_filters_summary
+
+Table profile:
+{json.dumps(table_profile_payload, default=str, indent=2)}
+""".strip()
 
 
 def validate_table_metadata(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -49,6 +65,7 @@ def validate_table_metadata(data: Dict[str, Any]) -> Dict[str, Any]:
         "description",
         "purpose",
         "grain",
+        "common_filters_summary",
     ]
 
     for key in required_string_fields:
@@ -58,5 +75,10 @@ def validate_table_metadata(data: Dict[str, Any]) -> Dict[str, Any]:
     for key in required_list_fields:
         if key not in data or not isinstance(data[key], list):
             data[key] = []
+        else:
+            data[key] = [str(x).strip() for x in data[key] if x is not None and str(x).strip()]
+
+    if not data["common_filters_summary"] and data["common_filters"]:
+        data["common_filters_summary"] = ", ".join(data["common_filters"])
 
     return data

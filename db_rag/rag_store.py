@@ -12,7 +12,7 @@ def _get_collection():
     chroma_dir = os.getenv("CHROMA_DIR", "./chroma_db")
 
     client = chromadb.PersistentClient(path=chroma_dir)
-    return client.get_or_create_collection(name="schema")
+    return client.get_or_create_collection(name="semantic_schema")
 
 
 def embed_text(gclient, text):

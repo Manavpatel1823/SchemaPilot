@@ -469,20 +469,20 @@ Example questions:
 """.strip()
 
     return {
-        "id": f"table::{table_name}",
+    "id": f"table::{table_name}",
+    "table_name": table_name,
+    "text": doc_text,
+    "metadata": {
         "table_name": table_name,
-        "text": doc_text,
-        "metadata": {
-            "table_name": table_name,
-            "row_count": table_profile.get("row_count"),
-            "primary_keys": table_profile.get("primary_keys", []),
-            "description": llm_metadata.get("description"),
-            "grain": llm_metadata.get("grain"),
-            "important_columns": llm_metadata.get("important_columns", []),
-            "possible_metrics": llm_metadata.get("possible_metrics", []),
-            "warnings": llm_metadata.get("warnings", []),
-        },
-    }
+        "row_count": table_profile.get("row_count", 0),
+        "primary_keys": ", ".join(table_profile.get("primary_keys", [])),
+        "description": llm_metadata.get("description", ""),
+        "grain": llm_metadata.get("grain", ""),
+        "important_columns": ", ".join(llm_metadata.get("important_columns", [])),
+        "possible_metrics": ", ".join(llm_metadata.get("possible_metrics", [])),
+        "warnings": " | ".join(llm_metadata.get("warnings", [])),
+    },
+}
 
 
 def build_database_profiles(conn, sample_limit: int = 10) -> Dict[str, Dict[str, Any]]:
